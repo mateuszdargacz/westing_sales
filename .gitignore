@@ -63,3 +63,4 @@ tests/.hitch
 # MailHog binary
 mailhog
 *.db
+staticfiles
