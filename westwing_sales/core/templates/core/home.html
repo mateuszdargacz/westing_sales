@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    <div class="container">
+
+        {% for name, data in campaigns.items %}
+            {% if data.ordered %}
+            <div class="row">
+            <div class="well well-sm">
+                <h4><strong>{{ name }}</strong> </h4><br>
+                <small>{{ data.average_percent }}</small>
+                <div class="btn-group">
+                    <a href="#" id="list" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-th-list">
+            </span>List</a> <a href="#" id="grid" class="btn btn-default btn-sm"><span
+                        class="glyphicon glyphicon-th"></span>Grid</a>
+                </div>
+            </div>
+
+            <div id="products" class="row list-group">
+                {% for product in  data.ordered %}
+
+                    <div class="item  list-group-item col-xs-4 col-lg-4">
+                        <div class="thumbnail">
+                            <img class="group list-group-image" src="{{ product.image }}" alt=""/>
+                            <div class="caption">
+                                <h4 class="group inner list-group-item-heading">
+                                    {{ product.name }}</h4>
+{#                                <p class="group inner list-group-item-text">#}
+{#                                    <a href="{{ product.url }}"><strong>Zobacz na stronie</strong></a>#}
+{#                                </p>#}
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <p class="lead">
+                                            <strong>{{ product.sale }}</strong>
+                                            <small style="text-decoration: line-through">{{ product.price }}</small>
+                                            <br>
+                                            <strong> Taniej o {{ product.sale_percentage }} %!</strong>
+                                        </p>
+                                    </div>
+                                    <div class="col-xs-12 col-md-6">
+                                        <a class="btn btn-success" href="{{ product.url }}">Sprawdź</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            </div>
+
+        {% endif %}
+            <hr>
+        {% endfor %}
+    </div>
+{% endblock %}
+{% block extra-js %}
+    <script>
+        $(document).ready(function () {
+            $('#list').click(function (event) {
+                event.preventDefault();
+                $('#products .item').removeClass('grid-group-item');
+                $('#products .item').addClass('list-group-item');
+            });
+            $('#grid').click(function (event) {
+                event.preventDefault();
+                $('#products .item').removeClass('list-group-item');
+                $('#products .item').addClass('grid-group-item');
+            });
+        });
+    </script>
+{% endblock %}

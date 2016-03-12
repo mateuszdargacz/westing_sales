@@ -36,7 +36,7 @@ htmlcov
 # Translations
 *.mo
 *.pot
-
+*.pyc
 # Pycharm
 .idea
 
@@ -53,8 +53,7 @@ node_modules/
 .sass-cache
 
 # virtual environments
-.env
-
+env
 # User-uploaded media
 westwing_sales/media/
 

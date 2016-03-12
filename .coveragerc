@@ -1,0 +1,5 @@
+[run]
+include = westwing_sales/*
+omit = *migrations*, *tests*
+plugins =
+    django_coverage_plugin
