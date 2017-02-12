@@ -2,33 +2,30 @@
 
 
 {% block content %}
-    <div class="container">
 
-        {% for name, data in campaigns.items %}
-            {% if data.ordered %}
+    {% for name, data in campaigns.items %}
+        {% if data.ordered %}
             <div class="row">
-            <div class="well well-sm">
-                <h4><strong>{{ name }}</strong> </h4><br>
-                <small>{{ data.average_percent }}</small>
-                <div class="btn-group">
-                    <a href="#" id="list" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-th-list">
-            </span>List</a> <a href="#" id="grid" class="btn btn-default btn-sm"><span
-                        class="glyphicon glyphicon-th"></span>Grid</a>
+                <div class="well well-sm">
+                    <h4><strong>{{ name }}</strong></h4><br>
+                    <strong>Average discount {{ data.average_percent }} %</strong>
                 </div>
             </div>
-
-            <div id="products" class="row list-group">
+            <div class="row">
                 {% for product in  data.ordered %}
-
-                    <div class="item  list-group-item col-xs-4 col-lg-4">
-                        <div class="thumbnail">
-                            <img class="group list-group-image" src="{{ product.image }}" alt=""/>
+                    <div class="col-4">
+                        <div class="item  list-group-item">
+                            <div class="thumbnail">
+                                <img class="group list-group-image"
+                                     style="display: block; max-width: 100%; height: auto;"
+                                     src="{{ product.image }}" alt=""/>
+                            </div>
                             <div class="caption">
                                 <h4 class="group inner list-group-item-heading">
                                     {{ product.name }}</h4>
-{#                                <p class="group inner list-group-item-text">#}
-{#                                    <a href="{{ product.url }}"><strong>Zobacz na stronie</strong></a>#}
-{#                                </p>#}
+                                {#                                <p class="group inner list-group-item-text">#}
+                                {#                                    <a href="{{ product.url }}"><strong>Zobacz na stronie</strong></a>#}
+                                {#                                </p>#}
                                 <div class="row">
                                     <div class="col-xs-12 col-md-6">
                                         <p class="lead">
@@ -45,28 +42,11 @@
                             </div>
                         </div>
                     </div>
+                    {% if forloop.counter > 0  and forloop.counter|divisibleby:3 %}</div>
+                        <div class="row">{% endif %}
                 {% endfor %}
-            </div>
-            </div>
-
+                </div>
         {% endif %}
-            <hr>
-        {% endfor %}
-    </div>
-{% endblock %}
-{% block extra-js %}
-    <script>
-        $(document).ready(function () {
-            $('#list').click(function (event) {
-                event.preventDefault();
-                $('#products .item').removeClass('grid-group-item');
-                $('#products .item').addClass('list-group-item');
-            });
-            $('#grid').click(function (event) {
-                event.preventDefault();
-                $('#products .item').removeClass('list-group-item');
-                $('#products .item').addClass('grid-group-item');
-            });
-        });
-    </script>
+        <hr>
+    {% endfor %}
 {% endblock %}
