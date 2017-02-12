@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
-import traceback
-
 import os
+import re
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -61,7 +60,6 @@ class Product(object):
 
 
 class ProductSet(object):
-    products = set()
 
     def add(self, *args):
         self.products.add(*args)
@@ -81,8 +79,6 @@ class ProductSet(object):
 
     def to_JSON(self):
         average_percent = self.average_percent
-        print(list(x.get('sale_percentage') for x in [prod.to_JSON() for prod in self.ordered]))
-        print('^' * 30)
         return dict(
             ordered=self.ordered,
             average_percent=average_percent
@@ -92,23 +88,55 @@ class ProductSet(object):
         return str(len(self.products))
 
 
+def get_json_from_script_variable(soup, variable_string):
+    """
+    Helper for extracting json variable from script tag in html
+    :param response: requests.Response
+    :param variable_string: variable to extract
+    :return: variable json
+    """
+    script = soup.find('script', text=re.compile('^\s*{}\s*=\s*\[.*?\]\s*;'.format(variable_string)))
+    if not script:
+        return None
+    json_text = re.search('^\s*{}\s*=\s*\[.*?\]\s*;'.format(variable_string),
+                          script.string, flags=re.DOTALL | re.MULTILINE)
+    if json_text:
+        return json.loads(json_text.group(0).split('= ')[1][: -1])
+
+
+def is_string_or_none(elem):
+    return elem and isinstance(elem, dict)
+
+
 def get_campaign_products(campaign_url):
     url = URI + campaign_url
+    product_set = ProductSet()
     res = requests.get(url, headers=HEADERS)
     selector = BeautifulSoup(res.content, 'html.parser')
-    products = selector.find_all('article', class_='product-item')
-    product_set = ProductSet()
+    product_lines = get_json_from_script_variable(selector, 'var productList')
+    if not product_lines:
+        print('DIDNT FOUND')
+        return product_set
+    products = list()
+    for product_line in product_lines:
+        products.extend([product.get('content') for product in product_line])
+
+    products = list(filter(is_string_or_none, products))
+
     for prod in products:
-        product = Product()
-        product.name = prod.find('h2', class_='product-item__title').text
-        product.url = URI + prod.find('a', class_='product-item__wrapping-link').get('href')
-        product.image = prod.find('img', class_='product-item__image').get('src')
-        product.price = round(
-            float(prod.find('span', class_='product-item__price--original').text.strip().replace(',-', '')), 2)
-        product.sale = round(float(
-            prod.find('span', class_='product-item__price--our').text.strip().replace(',-', '').replace('od    ',
-                '')), 2)
-        product_set.add(product)
+        try:
+            product = Product()
+            product.name = prod['name']
+            product.url = URI + prod['linkUrl']
+            product.image = prod['image']
+            product.price = round(float(prod['originalPrice'].strip()), 2)
+            product.sale = round(float(prod['price'].strip()), 2)
+            product_set.add(product)
+        except Exception as e:
+            print(prod, e)
+            break
+
+    print('^' * 30)
     product_set.products = set(product_set.ordered)
     return product_set
 
@@ -132,10 +160,12 @@ def get_all_products():
         campaigns = selector.find_all('a', class_=CAMPAING_DETAILS_URL_CLASS)
         for campaign in campaigns:
             campaign_name = campaign.find('div', class_='campaign-item__title-text').text
+            print('campain url', URI + campaign.get('href'))
             product_set = get_campaign_products(campaign.get('href'))
-            campaign_products.update({
-                campaign_name: product_set
-            })
+            if list(product_set.products):
+                campaign_products.update({
+                    campaign_name: product_set
+                })
         with open(cache_path, 'w+') as prod_file:
             json.dump(campaign_products, prod_file, cls=MagicEncoder)
     return campaign_products

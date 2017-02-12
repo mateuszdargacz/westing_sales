@@ -15,4 +15,5 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = dict()
         context.update(campaigns=get_all_products())
+
         return self.render_to_response(context)
