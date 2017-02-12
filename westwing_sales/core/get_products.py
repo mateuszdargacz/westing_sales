@@ -150,8 +150,8 @@ def get_all_products():
         mtime = datetime.datetime.fromtimestamp(stats.st_mtime)
         now = datetime.datetime.now()
         days_ago = (now - mtime).days
-    except:
-        pass
+    except Exception as e:
+        print('DATE ERROR', e)
     if os.path.exists(cache_path) and days_ago < 1:
         campaign_products = json.load(open(cache_path, 'r'))
     else:
